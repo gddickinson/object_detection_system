@@ -1,0 +1,63 @@
+# Object Detection and Tracking System Configuration
+
+# Authentication settings
+auth:
+  users_file: "data/users/users.json"
+  session_expiry: 86400  # 24 hours in seconds
+
+# Model configurations
+models:
+  detector:
+    type: "yolov8"
+    model_name: "yolov8n.pt"  # Small model for testing, can use larger models for better results
+    confidence: 0.5
+  
+  segmentor:
+    type: "sam"
+    model_type: "vit_h"
+    checkpoint: "sam_vit_h_4b8939.pth"
+  
+  tracker:
+    type: "bytetrack"
+    track_thresh: 0.25
+    track_buffer: 30
+    match_thresh: 0.8
+
+# LLM integration
+llm:
+  type: "ollama"  # Options: none, cloud, ollama, command
+  model: "llama3"  # For Ollama
+  host: "http://localhost:11434"  # Ollama host
+  # For cloud LLM (e.g., OpenAI)
+  api_key: ""
+  api_endpoint: "https://api.openai.com/v1/chat/completions"
+  # For command LLM
+  command: "ollama"
+
+# GUI settings
+gui:
+  width: 1200
+  height: 800
+  theme: "system"  # Options: system, light, dark
+  font_size: 10
+  remember_settings: true
+
+# Processing settings
+processing:
+  max_objects: 50
+  save_results: true
+  output_dir: "output"
+  batch_size: 1  # Will be adjusted based on system capabilities
+
+# System settings
+system:
+  use_mps: true  # For M1/M2 Macs
+  low_memory_mode: false
+  debug: false
+  log_level: "info"
+
+# Plugin settings
+plugins:
+  directory: "plugins"
+  enabled: true
+  autoload: true

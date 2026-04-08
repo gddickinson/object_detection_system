@@ -5,13 +5,14 @@ import logging
 import platform
 import pkg_resources
 import os
+from typing import Optional
 
 logger = logging.getLogger('object_detection.utils.preprocessing')
 
-def check_dependencies(system_info=None):
+def check_dependencies(system_info: Optional[dict] = None) -> None:
     """
     Check if required packages are installed and hardware is available.
-    
+
     Args:
         system_info: Dictionary containing system information
     """
@@ -82,13 +83,13 @@ def check_dependencies(system_info=None):
         logger.warning("Some required dependencies are missing")
 
 
-def is_package_installed(package_name):
+def is_package_installed(package_name: str) -> bool:
     """
     Check if a package is installed.
-    
+
     Args:
         package_name: Name of the package to check
-        
+
     Returns:
         True if the package is installed, False otherwise
     """
@@ -100,13 +101,13 @@ def is_package_installed(package_name):
         return False
 
 
-def install_package(package_name):
+def install_package(package_name: str) -> bool:
     """
     Install a package using pip.
-    
+
     Args:
         package_name: Name of the package to install
-        
+
     Returns:
         True if the installation was successful, False otherwise
     """
@@ -117,12 +118,15 @@ def install_package(package_name):
         return False
 
 
-def check_gpu_availability(system_info=None):
+def check_gpu_availability(system_info: Optional[dict] = None) -> bool:
     """
     Check if a GPU is available for computation.
-    
+
     Args:
         system_info: Dictionary containing system information
+
+    Returns:
+        True if GPU is available, False otherwise
     """
     try:
         # Try to import torch
@@ -150,9 +154,12 @@ def check_gpu_availability(system_info=None):
         return False
 
 
-def check_mps_availability():
+def check_mps_availability() -> bool:
     """
     Check if MPS (Metal Performance Shaders) is available on macOS.
+
+    Returns:
+        True if MPS is available, False otherwise
     """
     try:
         # Try to import torch
@@ -175,10 +182,10 @@ def check_mps_availability():
         return False
 
 
-def check_ollama_availability():
+def check_ollama_availability() -> Optional[dict]:
     """
     Check if Ollama is available on the system.
-    
+
     Returns:
         Dictionary with Ollama availability info or None if not available
     """
@@ -233,15 +240,15 @@ def check_ollama_availability():
         return None
 
 
-def download_model_if_needed(model_path, url, size_hint=None):
+def download_model_if_needed(model_path: str, url: str, size_hint: Optional[int] = None) -> bool:
     """
     Download a model file if it doesn't exist.
-    
+
     Args:
         model_path: Path where the model should be stored
         url: URL to download the model from
         size_hint: Hint about the file size for progress reporting
-        
+
     Returns:
         True if the model is available, False otherwise
     """

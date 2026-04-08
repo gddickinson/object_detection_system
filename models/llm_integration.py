@@ -108,8 +108,8 @@ class CloudLLM(BaseLLM):
             try:
                 description = result["choices"][0]["message"]["content"].strip()
                 return description
-            except:
-                logger.error(f"Error extracting description from response: {result}")
+            except (KeyError, IndexError, TypeError) as e:
+                logger.error(f"Error extracting description from response: {result} ({e})")
                 return "Unidentified object"
         
         except Exception as e:
@@ -141,36 +141,45 @@ class OllamaLLM(BaseLLM):
     def _check_availability(self):
         """
         Check if Ollama is available.
-        
+
         Returns:
             True if Ollama is available, False otherwise
         """
         try:
             # Check if Ollama is running
             response = requests.get(f"{self.host}/api/tags", timeout=2)
-            
+
             if response.status_code == 200:
                 # Check if the model is available
                 models = response.json().get("models", [])
                 available_models = [model["name"] for model in models]
-                
+
                 if self.model in available_models:
                     logger.info(f"Ollama model {self.model} is available")
                     return True
                 else:
                     logger.warning(f"Ollama model {self.model} is not available. Available models: {available_models}")
-                    
+
                     # If our model isn't available, but there are other models, use the first one
                     if available_models:
                         self.model = available_models[0]
                         logger.info(f"Using Ollama model {self.model} instead")
                         return True
-                    
+
                     return False
             else:
                 logger.warning(f"Failed to get Ollama models: {response.status_code}")
                 return False
-        
+
+        except requests.exceptions.ConnectionError:
+            logger.warning(
+                f"Cannot connect to Ollama at {self.host}. "
+                "Ensure the Ollama service is running (run 'ollama serve')."
+            )
+            return False
+        except requests.exceptions.Timeout:
+            logger.warning(f"Timeout connecting to Ollama at {self.host}")
+            return False
         except requests.exceptions.RequestException as e:
             logger.warning(f"Error connecting to Ollama: {e}")
             return False
@@ -212,7 +221,7 @@ class OllamaLLM(BaseLLM):
             # Clean up temporary file
             try:
                 os.remove(temp_path)
-            except:
+            except OSError:
                 pass
             
             if response.status_code == 200:
@@ -264,7 +273,7 @@ class LocalCommandLLM(BaseLLM):
             result = subprocess.run(["which", self.command], capture_output=True, text=True)
             
             return result.returncode == 0
-        except:
+        except (FileNotFoundError, OSError):
             return False
     
     def analyze_image(self, image):
@@ -293,7 +302,7 @@ class LocalCommandLLM(BaseLLM):
             # Clean up temporary file
             try:
                 os.remove(temp_path)
-            except:
+            except OSError:
                 pass
             
             if result.returncode == 0:

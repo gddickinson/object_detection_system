@@ -1,0 +1,10 @@
+{
+  "detections": {
+    "boxes": [],
+    "scores": [],
+    "classes": [],
+    "class_names": [],
+    "centers": [],
+    "llm_descriptions": []
+  }
+}

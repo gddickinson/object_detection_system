@@ -7,16 +7,22 @@ auth:
 
 # Model configurations
 models:
+#  detector:
+#    type: "yolov8"
+#    model_name: "yolov8n.pt"  # Small model for testing, can use larger models for better results
+#    confidence: 0.5
   detector:
-    type: "yolov8"
-    model_name: "yolov8n.pt"  # Small model for testing, can use larger models for better results
+    type: "coreml"  # Use CoreML for best Apple Silicon performance
+    coreml_model_path: "data/models/yolov8n.mlpackage"  # Point to the model you just created
     confidence: 0.5
-  
+
+  labels_file: "data/models/labels.txt"  # Path to class labels (relative to project root)
+
   segmentor:
     type: "sam"
-    model_type: "vit_h"
-    checkpoint: "sam_vit_h_4b8939.pth"
-  
+    model_type: "vit_b"  # Changed from vit_h to vit_b
+    checkpoint: "data/models/sam_vit_b_01ec64.pth"  # Path relative to project root
+
   tracker:
     type: "bytetrack"
     track_thresh: 0.25

@@ -190,3 +190,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Segment Anything](https://github.com/facebookresearch/segment-anything) for SAM
 - [ByteTrack](https://github.com/ifzhang/ByteTrack) for object tracking
 - [Ollama](https://ollama.ai) for local LLM capabilities
+
+
+---
+*Built with AI assistance from [Claude (Anthropic)](https://claude.com/).*

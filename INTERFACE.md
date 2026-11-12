@@ -39,8 +39,7 @@
 - `SimpleSegmentor` - basic box-based segmentation
 
 ### models/tracker.py
-- `ObjectTracker` - ByteTrack/SORT if they can be created, else the simple IoU tracker from postprocess/iou_tracker.py
-  (with ultralytics 8.x the ByteTrack import fails, so the IoU tracker runs)
+- `ObjectTracker` - ByteTrack (models/bytetrack_adapter.py, ultralytics) or SORT; else the simple IoU tracker (postprocess/iou_tracker.py, `simple_iou_thresh`)
 
 ### models/llm_integration.py
 - `BaseLLM` - abstract: `analyze_image(image)`
@@ -79,6 +78,9 @@ main.py -> config.yaml (load settings)
 - `coreml_output.py` - `parse_coreml_detections(coordinates, confidence, w, h, threshold)`: Core ML NMS outputs -> pixel boxes
 - `colors.py` - `class_color_bgr(name)`: stable per-class colour (crc32 hue), used by gui/ and utils/visualization.py
 - `iou_tracker.py` - `box_iou`, `associate_simple(...)`: the greedy IoU tracker used by ObjectTracker
+
+### models/bytetrack_adapter.py
+- `create_bytetrack(track_thresh, track_buffer, match_thresh)`, `bytetrack_update(tracker, boxes, scores, classes)` - ultralytics 8.x BYTETracker with numpy input
 
 ## Web interface (`web/` package, `python run_web.py`, http://127.0.0.1:8171)
 | File | Contents |

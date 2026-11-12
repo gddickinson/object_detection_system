@@ -3,6 +3,7 @@ import logging
 import cv2
 from .base import BaseTracker
 from postprocess.iou_tracker import associate_simple, box_iou
+from .bytetrack_adapter import bytetrack_update, create_bytetrack
 
 logger = logging.getLogger('object_detection.models.tracker')
 
@@ -26,6 +27,8 @@ class ObjectTracker(BaseTracker):
         self.track_thresh = tracker_config.get('track_thresh', 0.25)
         self.track_buffer = tracker_config.get('track_buffer', 30)
         self.match_thresh = tracker_config.get('match_thresh', 0.8)
+        # Minimum IoU for the simple IoU tracker (match_thresh is ByteTrack's association threshold)
+        self.simple_iou_thresh = tracker_config.get('simple_iou_thresh', 0.3)
         
         # Initialize tracker
         self.tracker = self._init_tracker()
@@ -44,27 +47,16 @@ class ObjectTracker(BaseTracker):
         """
         if self.tracker_type == 'bytetrack':
             try:
-                # Try to import ByteTrack
-                from ultralytics.trackers.byte_track.byte_tracker import BYTETracker
-                
-                # Create tracker
-                tracker = BYTETracker(
-                    track_thresh=self.track_thresh,
-                    track_buffer=self.track_buffer,
-                    match_thresh=self.match_thresh,
-                    frame_rate=30
-                )
-                
+                tracker = create_bytetrack(self.track_thresh, self.track_buffer, self.match_thresh, frame_rate=30)
                 logger.info("ByteTrack initialized")
                 return tracker
-                
             except ImportError:
-                logger.warning("ByteTrack not available, using simple tracker")
+                logger.warning("ByteTrack not available (needs ultralytics), using simple tracker")
                 return None
             except Exception as e:
                 logger.error(f"Error initializing ByteTrack: {e}")
                 return None
-        
+
         elif self.tracker_type == 'sort':
             try:
                 # Try to import SORT
@@ -143,49 +135,32 @@ class ObjectTracker(BaseTracker):
             Tracking results
         """
         try:
-            # Convert detections to format expected by ByteTrack: [x1, y1, x2, y2, score, class]
-            boxes = detections['boxes']
-            scores = detections['scores']
-            classes = detections['classes']
-            
-            # Combine into single array
-            dets = np.concatenate([boxes, scores[:, None], classes[:, None]], axis=1)
-            
-            # Update tracker
-            online_targets = self.tracker.update(dets, (1, 1), (1, 1))  # Dummy image size
-            
-            # Process tracker results
+            rows = bytetrack_update(self.tracker, detections['boxes'], detections['scores'], detections['classes'])
             active_tracks = []
-            
-            for t in online_targets:
-                track_id = t.track_id
+            for row in rows:
+                track_id = int(row[4])
                 active_tracks.append(track_id)
-                
-                # Create or update track
                 if track_id not in self.tracks:
                     self.tracks[track_id] = {
                         'boxes': [],
-                        'class': int(t.cls),
+                        'class': int(row[6]),
                         'first_frame': self.frame_count,
                         'last_frame': self.frame_count
                     }
                 else:
                     self.tracks[track_id]['last_frame'] = self.frame_count
-                
-                # Add current position
-                box = t.tlbr  # top-left, bottom-right format
-                self.tracks[track_id]['boxes'].append(box)
-            
+                self.tracks[track_id]['boxes'].append(np.asarray(row[:4], dtype=float))
+
             return {
                 'tracks': self.tracks,
                 'active_tracks': active_tracks
             }
-            
+
         except Exception as e:
             logger.error(f"Error in ByteTrack update: {e}")
             # Fallback to simple tracking
             return self._update_simple(detections)
-    
+
     def _update_sort(self, detections):
         """
         Update using SORT.
@@ -265,7 +240,7 @@ class ObjectTracker(BaseTracker):
         """
         active_tracks, self.next_id = associate_simple(
             self.tracks, detections['boxes'], detections['scores'], detections['classes'],
-            self.frame_count, self.next_id, self.track_buffer, self.match_thresh)
+            self.frame_count, self.next_id, self.track_buffer, self.simple_iou_thresh)
         return {
             'tracks': self.tracks,
             'active_tracks': active_tracks
@@ -284,16 +259,10 @@ class ObjectTracker(BaseTracker):
         # Re-initialize tracker if needed
         if self.tracker_type == 'bytetrack':
             try:
-                from ultralytics.trackers.byte_track.byte_tracker import BYTETracker
-                self.tracker = BYTETracker(
-                    track_thresh=self.track_thresh,
-                    track_buffer=self.track_buffer,
-                    match_thresh=self.match_thresh,
-                    frame_rate=30
-                )
-            except:
+                self.tracker = create_bytetrack(self.track_thresh, self.track_buffer, self.match_thresh, frame_rate=30)
+            except Exception:
                 self.tracker = None
-        
+
         elif self.tracker_type == 'sort':
             try:
                 from sort.sort import Sort

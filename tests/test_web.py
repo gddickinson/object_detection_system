@@ -78,7 +78,7 @@ def test_modules_read_without_import():
 
 def test_tracker_demo_uses_config():
     j = client.get("/api/demo/tracker").json()
-    assert j["config"]["match_thresh"] == j["runs"][0]["match_thresh"]
+    assert j["config"]["simple_iou_thresh"] == j["runs"][0]["match_thresh"] == 0.3
     assert len(j["sequence"]["frames"]) == len(j["runs"][0]["frames"])
     assert j["runs"][-1]["n_tracks"] >= j["sequence"]["params"]["n_objects"]
 

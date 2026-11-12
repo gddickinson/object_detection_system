@@ -27,7 +27,8 @@ models:
     type: "bytetrack"
     track_thresh: 0.25
     track_buffer: 30
-    match_thresh: 0.8
+    match_thresh: 0.8        # ByteTrack association threshold
+    simple_iou_thresh: 0.3   # minimum IoU for the simple IoU tracker (fallback / type "simple")
 
 # LLM integration
 llm:

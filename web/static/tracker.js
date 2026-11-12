@@ -7,7 +7,7 @@ import { runTracker } from './track_engine.js';
 route('tracker', async () => {
   const demo = await api('/demo/tracker');
   const cfg = demo.config;
-  const st = { thresh: cfg.match_thresh, buffer: cfg.track_buffer, scene: 'py', frame: 0, playing: true,
+  const st = { thresh: cfg.simple_iou_thresh, buffer: cfg.track_buffer, scene: 'py', frame: 0, playing: true,
     labels: true, trails: true, js: { n_objects: 8, speed: 5, jitter: 2, miss_rate: 0.1, seed: 1 } };
   app().innerHTML = `
   <h1>Tracker</h1>
@@ -15,10 +15,10 @@ route('tracker', async () => {
     unmatched same-class detection whose IoU with its last box is highest and <b>above the match threshold</b>; the rest
     start new tracks; a track stays live for <b>buffer</b> frames. Boxes are coloured by track ID. The scene is
     synthetic: ground truth is known, so identity changes can be counted.</p>
-  <div class="callout">config.yaml sets <code>type: ${esc(cfg.type)}</code>, <code>match_thresh: ${cfg.match_thresh}</code>,
-    <code>track_buffer: ${cfg.track_buffer}</code>. ByteTrack cannot be created with the installed ultralytics (see Models),
-    so this simple tracker runs, and it reads match_thresh as a <i>minimum IoU</i>. With 0.8, moving objects lose their
-    identity almost every frame; try 0.3.</div>
+  <div class="callout">config.yaml selects <code>type: ${esc(cfg.type)}</code> (ultralytics' ByteTrack, local app). This
+    simple tracker runs for <code>type: simple</code> and whenever ByteTrack or SORT cannot be created; its minimum IoU is
+    <code>simple_iou_thresh: ${cfg.simple_iou_thresh}</code>, buffer <code>track_buffer: ${cfg.track_buffer}</code>. A high
+    threshold such as 0.8 breaks moving objects' identities almost every frame.</div>
   <div class="vis">
     <div>
       <div class="stagebox"><canvas id="cv" width="640" height="360" role="img" aria-label="Synthetic scene with tracked detection boxes"></canvas></div>
@@ -98,7 +98,7 @@ route('tracker', async () => {
       const js = runTracker(demo.sequence.frames, py.track_buffer, py.match_thresh);
       const same = js.n_tracks === py.n_tracks && js.id_changes === py.id_changes
         && py.frames.every((f, i) => f.det_track.join() === js.frames[i].det_track.join());
-      return `<tr><td>${py.match_thresh}${py.match_thresh === cfg.match_thresh ? ' (config)' : ''}</td><td>${py.track_buffer}</td>
+      return `<tr><td>${py.match_thresh}${py.match_thresh === cfg.simple_iou_thresh ? ' (config)' : ''}</td><td>${py.track_buffer}</td>
         <td>${py.n_tracks}</td><td>${py.id_changes}</td><td><span class="badge ${same ? 'ok' : 'no'}">${same ? 'identical, every frame' : 'differs'}</span></td></tr>`;
     }).join('');
 

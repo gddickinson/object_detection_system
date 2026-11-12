@@ -497,6 +497,7 @@ class SettingsDialog(QDialog):
             }
             
             self.config['models']['tracker'] = {
+                **self.config['models'].get('tracker', {}),  # keep keys without a widget (simple_iou_thresh)
                 'type': self.tracker_type_combo.currentText(),
                 'track_thresh': self.track_thresh_spin.value(),
                 'track_buffer': self.track_buffer_spin.value(),

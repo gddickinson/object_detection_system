@@ -44,16 +44,17 @@ SEGMENTORS = [
 ]
 TRACKERS = [
     {"id": "bytetrack", "name": "ByteTrack", "source": "models/tracker.py",
-     "how": "Imports ultralytics.trackers.byte_track.byte_tracker.BYTETracker with keyword arguments. That module "
-            "path and signature do not exist in ultralytics 8.x, so creation fails and the simple IoU tracker runs "
-            "instead (logged as 'ByteTrack not available')."},
+     "how": "ultralytics' BYTETracker (models/bytetrack_adapter.py): high-score detections (>= track_thresh) are "
+            "matched to Kalman-predicted tracks first, low-score ones second; match_thresh is the association "
+            "threshold; lost tracks are kept for track_buffer frames. The config.yaml default; needs ultralytics."},
     {"id": "sort", "name": "SORT", "source": "models/tracker.py",
      "how": "sort.sort.Sort(max_age = track_buffer, min_hits = 3, iou_threshold = match_thresh) if the sort package "
             "is installed; otherwise the simple IoU tracker."},
     {"id": "simple", "name": "Simple IoU tracker", "source": "postprocess/iou_tracker.py",
      "how": "Greedy: each live track takes the unmatched same-class detection with the highest IoU against its last "
-            "box, if IoU > match_thresh; other detections start new tracks; a track stays live for track_buffer "
-            "frames. This is what runs in practice (and what the Tracker page runs in your browser)."},
+            "box, if IoU > simple_iou_thresh (default 0.3); other detections start new tracks; a track stays live for track_buffer "
+            "frames. Used for type 'simple' and whenever ByteTrack or SORT cannot be created; the Tracker page runs it in "
+            "your browser."},
 ]
 LLMS = [
     {"id": "ollama", "name": "Ollama (local)", "cls": "OllamaLLM", "source": "models/llm_integration.py"},

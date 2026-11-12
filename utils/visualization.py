@@ -11,6 +11,8 @@ import json
 import random
 import os
 
+from postprocess.colors import class_color_bgr
+
 logger = logging.getLogger('object_detection.gui.visualization')
 
 class ZoomableGraphicsView(QGraphicsView):
@@ -372,20 +374,8 @@ class VisualizationWidget(QWidget):
         Returns:
             BGR color tuple
         """
-        # Hash the class name to get a consistent color
-        hash_val = hash(class_name) % 255
-        
-        # Generate a color using HSV (more visually distinct colors)
-        h = hash_val / 255.0
-        s = 0.8
-        v = 0.8
-        
-        # Convert HSV to RGB
-        import colorsys
-        r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        
-        # Convert to 0-255 range and BGR order
-        return (int(b * 255), int(g * 255), int(r * 255))
+        # Stable hash of the class name (Python's hash() is salted per process)
+        return class_color_bgr(class_name)
     
     def reset_view(self):
         """Reset the view to its original state."""

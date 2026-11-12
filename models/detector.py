@@ -4,6 +4,7 @@ import logging
 import cv2
 import os
 from .base import BaseDetector
+from postprocess.coreml_output import parse_coreml_detections
 
 logger = logging.getLogger('object_detection.models.detector')
 
@@ -488,42 +489,17 @@ class CoreMLDetector(BaseDetector):
             # Extract detection results based on model output
             # Format may vary based on the specific CoreML conversion
             if "coordinates" in prediction and "confidence" in prediction:
-                coords = prediction["coordinates"]
-                confs = prediction["confidence"]
-                class_ids = prediction.get("classId", [0] * len(coords))
-
-                # Scale boxes back to original image size
-                scale_x = original_width / input_size[0]
-                scale_y = original_height / input_size[1]
-
-                for i, box in enumerate(coords):
-                    if confs[i] >= self.confidence:
-                        # Extract box coordinates (may need to be adjusted based on model output format)
-                        x1, y1, x2, y2 = box
-
-                        # Scale to original image
-                        x1 = x1 * scale_x
-                        y1 = y1 * scale_y
-                        x2 = x2 * scale_x
-                        y2 = y2 * scale_y
-
-                        boxes.append([x1, y1, x2, y2])
-                        scores.append(confs[i])
-
-                        # Get class ID and name
-                        class_id = class_ids[i] if isinstance(class_ids, list) else class_ids
-                        classes.append(class_id)
-
-                        # Get class name
-                        if class_id in self.labels:
-                            class_names.append(self.labels[class_id])
-                        else:
-                            class_names.append(f"class_{class_id}")
-
-                        # Calculate center
-                        center_x = (x1 + x2) / 2
-                        center_y = (y1 + y2) / 2
-                        centers.append((center_x, center_y))
+                # YOLO exported with NMS: confidence is (N, num_classes), coordinates are normalised centre xywh
+                boxes_px, confs, class_ids = parse_coreml_detections(
+                    prediction["coordinates"], prediction["confidence"],
+                    original_width, original_height, self.confidence)
+                for box, conf, class_id in zip(boxes_px, confs, class_ids):
+                    x1, y1, x2, y2 = (float(v) for v in box)
+                    boxes.append([x1, y1, x2, y2])
+                    scores.append(float(conf))
+                    classes.append(int(class_id))
+                    class_names.append(self.labels.get(int(class_id), f"class_{class_id}"))
+                    centers.append(((x1 + x2) / 2, (y1 + y2) / 2))
 
             # Alternative format (depends on CoreML model output)
             elif "output" in prediction:

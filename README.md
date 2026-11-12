@@ -6,7 +6,7 @@ A comprehensive computer vision application for detecting, segmenting, and track
 
 - **Object Detection**: Identify objects in images and videos using state-of-the-art models (YOLOv8, TensorFlow, CoreML)
 - **Instance Segmentation**: Generate precise object outlines using Segment Anything Model (SAM)
-- **Object Tracking**: Track objects across video frames with ByteTrack or SORT algorithms
+- **Object Tracking**: Track objects across video frames with a greedy IoU tracker (ByteTrack and SORT are attempted first; see the note under Configuration)
 - **LLM Integration**: Enhanced object recognition using Ollama (local) or Cloud APIs
 - **Multi-Format Support**: Process various image and video formats
 - **Hardware Optimization**: Automatic detection and utilization of available hardware (CUDA, MPS on Apple Silicon)
@@ -28,8 +28,8 @@ A comprehensive computer vision application for detecting, segmenting, and track
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/object-detection-system.git
-   cd object-detection-system
+   git clone https://github.com/gddickinson/object_detection_system.git
+   cd object_detection_system
    ```
 
 2. Install dependencies:
@@ -116,6 +116,12 @@ Key configuration options:
 - **System**: Configure hardware acceleration, memory usage, and logging
 - **GUI**: Adjust window size, theme, and other interface settings
 - **Processing**: Configure batch size, output directory, and other processing options
+
+Note on tracking: `models/tracker.py` imports ByteTrack from `ultralytics.trackers.byte_track`, a module path and
+constructor that current ultralytics 8.x releases do not have, and SORT from the separate `sort` package. When either
+cannot be created (the usual case), the tracker logs "ByteTrack not available" and uses its built-in simple IoU tracker
+(`postprocess/iou_tracker.py`), which reads `match_thresh` as the minimum IoU between a track's last box and a new
+detection.
 
 ## Project Structure
 

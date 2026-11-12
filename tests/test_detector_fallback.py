@@ -25,3 +25,15 @@ def test_yolov8_config_unchanged():
     with patch.object(d.ObjectDetector, "_init_model", return_value="model"):
         det = d.create_detector(cfg, {"os": "Linux", "architecture": "x86_64"})
     assert det.model_type == "yolov8" and det.model_name == "yolov8s.pt"
+
+
+def test_missing_coreml_package_falls_back(tmp_path):
+    """On Apple Silicon with coremltools but no .mlpackage on disk (weights are not committed), use YOLOv8."""
+    import sys
+    from unittest.mock import MagicMock
+    from models import detector as d
+    cfg = {"models": {"detector": {"type": "coreml", "coreml_model_path": str(tmp_path / "missing.mlpackage")}}}
+    with patch.dict(sys.modules, {"coremltools": MagicMock()}), \
+            patch.object(d.ObjectDetector, "_init_model", return_value="model"):
+        det = d.create_detector(cfg, {"os": "Darwin", "architecture": "arm64"})
+    assert isinstance(det, d.ObjectDetector) and det.model_type == "yolov8"

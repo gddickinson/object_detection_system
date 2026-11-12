@@ -608,10 +608,15 @@ def create_detector(config=None, system_info=None):
 
     # For macOS with Apple Silicon, try Core ML first
     if os_type == 'Darwin' and 'arm' in system_info.get('architecture', ''):
+        coreml_path = ((config or {}).get('models', {}).get('detector', {})
+                       .get('coreml_model_path', 'data/models/yolov8.mlpackage'))
         try:
             import coremltools
-            logger.info("Using Core ML detector for Apple Silicon")
-            return CoreMLDetector(config, system_info)
+            if os.path.exists(coreml_path):
+                logger.info("Using Core ML detector for Apple Silicon")
+                return CoreMLDetector(config, system_info)
+            logger.info(f"Core ML model {coreml_path} not found (export it with: yolo export model=yolov8n.pt "
+                        "format=coreml nms=True), falling back to standard detector")
         except ImportError:
             logger.info("Core ML not available, falling back to standard detector")
 

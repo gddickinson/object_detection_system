@@ -3,7 +3,7 @@ import subprocess
 import importlib
 import logging
 import platform
-import pkg_resources
+from importlib import metadata
 import os
 from typing import Optional
 
@@ -94,10 +94,10 @@ def is_package_installed(package_name: str) -> bool:
         True if the package is installed, False otherwise
     """
     try:
-        # Try to get package version
-        pkg_resources.get_distribution(package_name)
+        # Look up the installed distribution (pkg_resources is gone from current setuptools)
+        metadata.distribution(package_name)
         return True
-    except pkg_resources.DistributionNotFound:
+    except metadata.PackageNotFoundError:
         return False
 
 

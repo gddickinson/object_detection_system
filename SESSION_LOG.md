@@ -32,3 +32,8 @@
   remain in git history (removing them would need a history rewrite: George's call).
 - Tests: `pytest tests` 36 passed; CI-like venv `tests/test_web.py` 18 passed, 2 skipped; `test_object_detection.py`
   15 passed; node 26 cases; screenshots --static and --base all ok, phone overflow 0 px.
+
+## 2026-11-12: git history rewrite (approved by George)
+- Purged from all history with git-filter-repo and force-pushed: data/models/yolov8n.pt and data/models/yolov8n.mlpackage (AGPL-3.0 Ultralytics weights; ultralytics downloads yolov8n.pt on first use, see README).
+  The current tree is unchanged (identical HEAD tree before/after); commit hashes changed, so old clones must be
+  re-cloned or reset to origin. A pre-rewrite mirror backup was kept outside the repo.

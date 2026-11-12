@@ -11,6 +11,7 @@ licences. Anyone who downloads, uses or redistributes them must follow those ter
 | TensorFlow SavedModel | `TensorFlowDetector` | Supplied by you | That model's licence |
 
 The model files are listed in `.gitignore`. Earlier commits of this repository did include `data/models/yolov8n.pt` and
-`data/models/yolov8n.mlpackage`; they were removed from the tree on 2026-11-12 but remain in the git history.
+`data/models/yolov8n.mlpackage`; they were removed from the tree and purged from the git history
+(history rewrite) on 2026-11-12.
 
 The static web site (GitHub Pages) runs no models and contains no model weights.

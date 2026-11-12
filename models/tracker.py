@@ -2,6 +2,7 @@ import numpy as np
 import logging
 import cv2
 from .base import BaseTracker
+from postprocess.iou_tracker import associate_simple, box_iou
 
 logger = logging.getLogger('object_detection.models.tracker')
 
@@ -254,139 +255,26 @@ class ObjectTracker(BaseTracker):
     
     def _update_simple(self, detections):
         """
-        Simple IoU-based tracking.
-        
+        Simple IoU-based tracking (postprocess/iou_tracker.associate_simple).
+
         Args:
             detections: Detection results
-            
+
         Returns:
             Tracking results
         """
-        boxes = detections['boxes']
-        scores = detections['scores']
-        classes = detections['classes']
-        
-        # No detections, just return current tracks
-        if len(boxes) == 0:
-            return {
-                'tracks': self.tracks,
-                'active_tracks': []
-            }
-        
-        # List of active tracks for this frame
-        active_tracks = []
-        
-        # Store matched tracks to avoid double-matching
-        matched_tracks = set()
-        
-        # Store matched detections to avoid double-matching
-        matched_detections = set()
-        
-        # Find matches between existing tracks and new detections
-        for track_id, track in self.tracks.items():
-            # Skip if track is too old (inactive)
-            if (self.frame_count - track['last_frame']) > self.track_buffer:
-                continue
-            
-            # Get the last box of this track
-            if not track['boxes']:
-                continue
-                
-            last_box = track['boxes'][-1]
-            
-            # Calculate IoU with each detection
-            best_iou = self.match_thresh
-            best_idx = -1
-            
-            for i, box in enumerate(boxes):
-                # Skip if this detection was already matched
-                if i in matched_detections:
-                    continue
-                
-                # Skip if class doesn't match
-                if track['class'] != classes[i]:
-                    continue
-                
-                iou = self._calculate_iou(last_box, box)
-                
-                if iou > best_iou:
-                    best_iou = iou
-                    best_idx = i
-            
-            # If a match was found, update the track
-            if best_idx >= 0:
-                # Mark as matched
-                matched_tracks.add(track_id)
-                matched_detections.add(best_idx)
-                
-                # Update track
-                track['boxes'].append(boxes[best_idx])
-                track['last_frame'] = self.frame_count
-                
-                # Add to active tracks
-                active_tracks.append(track_id)
-        
-        # Create new tracks for unmatched detections
-        for i, box in enumerate(boxes):
-            if i not in matched_detections:
-                # Create new track
-                track_id = self.next_id
-                self.next_id += 1
-                
-                self.tracks[track_id] = {
-                    'boxes': [box],
-                    'class': int(classes[i]),
-                    'score': float(scores[i]),
-                    'first_frame': self.frame_count,
-                    'last_frame': self.frame_count
-                }
-                
-                # Add to active tracks
-                active_tracks.append(track_id)
-        
+        active_tracks, self.next_id = associate_simple(
+            self.tracks, detections['boxes'], detections['scores'], detections['classes'],
+            self.frame_count, self.next_id, self.track_buffer, self.match_thresh)
         return {
             'tracks': self.tracks,
             'active_tracks': active_tracks
         }
-    
+
     def _calculate_iou(self, box1, box2):
-        """
-        Calculate IoU (Intersection over Union) between two boxes.
-        
-        Args:
-            box1: First box [x1, y1, x2, y2]
-            box2: Second box [x1, y1, x2, y2]
-            
-        Returns:
-            IoU value
-        """
-        # Extract coordinates
-        x1_1, y1_1, x2_1, y2_1 = box1
-        x1_2, y1_2, x2_2, y2_2 = box2
-        
-        # Calculate intersection area
-        x_left = max(x1_1, x1_2)
-        y_top = max(y1_1, y1_2)
-        x_right = min(x2_1, x2_2)
-        y_bottom = min(y2_1, y2_2)
-        
-        if x_right < x_left or y_bottom < y_top:
-            return 0.0
-        
-        intersection_area = (x_right - x_left) * (y_bottom - y_top)
-        
-        # Calculate union area
-        box1_area = (x2_1 - x1_1) * (y2_1 - y1_1)
-        box2_area = (x2_2 - x1_2) * (y2_2 - y1_2)
-        
-        union_area = box1_area + box2_area - intersection_area
-        
-        # Calculate IoU
-        if union_area > 0:
-            return intersection_area / union_area
-        else:
-            return 0.0
-    
+        """IoU of two [x1, y1, x2, y2] boxes (postprocess/iou_tracker.box_iou)."""
+        return box_iou(box1, box2)
+
     def reset(self):
         """Reset the tracker state."""
         self.frame_count = 0

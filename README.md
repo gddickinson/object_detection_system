@@ -157,6 +157,37 @@ object_detection_system/
     └── examples/                # Example files
 ```
 
+## Web interface
+
+A browser front end to the same Python models, plus a static showcase site
+(https://gddickinson.github.io/object_detection_system/ once GitHub Pages is enabled).
+
+### Run the web app
+
+```bash
+pip install -r requirements.txt -r requirements-web.txt
+python run_web.py          # http://127.0.0.1:8171 (local only)
+```
+
+- **Detect** (local app only): upload an image or video, or use `data/examples/cats.jpeg`; choose the confidence
+  threshold and back end (`auto` = `create_detector`, Core ML or YOLOv8). The repo's detector, segmentor (SAM or the
+  OpenCV fallback) and, for videos, tracker run on your computer; the page draws the GUI's overlays and downloads the
+  results JSON in the desktop app's format. LLM descriptions are not offered.
+- **Tracker**: the simple IoU tracker on synthetic scenes, run in the browser by a JS port that
+  `web/static/track_engine.test.mjs` checks against the Python code (`tests/fixtures/tracker_cases.json`).
+- **Segment**: the OpenCV fallback segmentation on a synthetic scene, precomputed by `scripts/make_segment_demo.py`.
+- **Architecture** and **Models**: modules, pipeline, back ends, config.yaml and the 80 classes, read from the repo.
+
+The static site runs no models (they are large and have their own licences) and publishes no model weights; its demo
+scenes are synthetic. Build it with `python scripts/build_static.py` (output in `site/`); tests:
+`python -m pytest tests` and `node web/static/track_engine.test.mjs`.
+
+| Home | Tracker | Segment |
+|---|---|---|
+| ![Home](docs/img/home.png) | ![Tracker](docs/img/tracker.png) | ![Segment](docs/img/segment.png) |
+| **Architecture** | **Models** | |
+| ![Architecture](docs/img/architecture.png) | ![Models](docs/img/models.png) | |
+
 ## Adding Plugins
 
 The application supports plugins for extending functionality. To create a plugin:

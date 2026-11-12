@@ -1,0 +1,60 @@
+/* Object Detection and Tracking System: accent palette and page styles (theme in style.css). */
+:root { --accent:#39ff9f; --accent2:#ff5ca8; --accent3:#ffd23f; --glow:rgba(57,255,159,.13); }
+button, .btn, .seg button.on { color:#03140c; }
+main:focus, main:focus-visible { outline:none; }
+.two > *, .side > *, .row > * { min-width:0; }
+.mark { border-color:var(--accent); box-shadow:0 0 12px var(--accent), inset 0 0 0 4px var(--bg), inset 0 0 0 9px var(--accent2); }
+.hero .btn { margin-right:10px; margin-bottom:8px; }
+.hide { display:none !important; }
+
+/* viewer: image or video with a canvas overlay */
+.vis { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:18px; align-items:start; }
+.vis > * { min-width:0; }
+.viewer { position:relative; background:#000; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.viewer img, .viewer video, .viewer canvas { display:block; width:100%; height:auto; }
+.viewer canvas.over { position:absolute; inset:0; height:100%; pointer-events:none; }
+.stagebox { background:#000; border:1px solid var(--line); border-radius:6px; }
+.stagebox canvas { display:block; width:100%; height:auto; }
+.toggles { display:flex; flex-wrap:wrap; gap:6px 16px; margin:8px 0; }
+.toggles label { display:flex; gap:6px; align-items:center; font-size:14px; color:var(--ink); }
+.playbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0; }
+.playbar button { margin:0; }
+.playbar input[type=range] { flex:1; min-width:160px; }
+
+/* badges, swatches, key-value */
+.badge { display:inline-block; font:11px var(--mono); padding:2px 8px; border-radius:3px; border:1px solid var(--line); color:var(--mute); max-width:100%; }
+.badge.ok { color:var(--accent); border-color:color-mix(in srgb, var(--accent) 50%, transparent); }
+.badge.no { color:var(--accent2); border-color:color-mix(in srgb, var(--accent2) 50%, transparent); }
+.sw { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:middle; }
+.classes { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:4px 12px; font:13px var(--mono); }
+.classes span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kv { display:grid; grid-template-columns:auto 1fr; gap:2px 14px; font-size:14px; }
+.kv dt { color:var(--mute); } .kv dd { margin:0; font:13px var(--mono); overflow-wrap:anywhere; }
+.tbl td { font:12.5px var(--mono); }
+.stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; margin:8px 0; }
+.stats div { border:1px solid var(--line); border-radius:6px; padding:6px 10px; }
+.stats b { display:block; font:600 20px var(--mono); color:var(--accent); }
+.stats span { font-size:12px; color:var(--mute); }
+
+/* architecture */
+.diagram { width:100%; height:auto; display:block; }
+.diagram text { font:12px var(--mono); fill:var(--ink); }
+.diagram .sub { fill:var(--mute); font-size:10.5px; }
+.diagram rect { fill:var(--panel, #0b0d18); stroke:var(--line); rx:6; }
+.diagram rect.a { stroke:var(--accent); } .diagram rect.b { stroke:var(--accent2); } .diagram rect.c { stroke:var(--accent3); }
+.diagram path { stroke:var(--mute); fill:none; marker-end:url(#arr); }
+.steps { counter-reset:s; list-style:none; padding:0; }
+.steps li { counter-increment:s; position:relative; padding:4px 0 4px 34px; }
+.steps li::before { content:counter(s); position:absolute; left:0; top:4px; width:22px; height:22px; border-radius:50%;
+  border:1px solid var(--accent); color:var(--accent); font:12px/22px var(--mono); text-align:center; }
+.mod { border-top:1px solid var(--line); padding:8px 0; }
+.mod code { color:var(--accent3); }
+.mod small { color:var(--mute); }
+.form fieldset { border:1px solid var(--line); border-radius:6px; padding:8px 14px 12px; margin:10px 0; min-width:0; }
+.form legend { font:12px var(--mono); color:var(--accent2); text-transform:uppercase; letter-spacing:.1em; padding:0 6px; }
+.form .hint { font-size:12px; color:var(--mute); margin:4px 0 0; }
+
+@media (max-width:760px) {
+  .vis { grid-template-columns:1fr; }
+  .kv { grid-template-columns:1fr; } .kv dd { margin-bottom:6px; }
+}

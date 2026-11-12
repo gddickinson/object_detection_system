@@ -1,0 +1,9 @@
+# Web interface and static-site build (pinned). Inference in the local app also needs requirements.txt
+# (torch, ultralytics, opencv-python); the static build and tests/test_web.py do not.
+fastapi==0.162.2
+httpx==0.28.1
+pytest==9.2.0
+uvicorn==0.54.0
+python-multipart==0.0.33
+numpy==2.5.4
+pyyaml==6.0.3

@@ -615,5 +615,9 @@ def create_detector(config=None, system_info=None):
         except ImportError:
             logger.info("Core ML not available, falling back to standard detector")
 
-    # Default to YOLO
+    # Default to YOLO (a "coreml" detector config falls back to the YOLOv8 PyTorch weights)
+    det_cfg = (config or {}).get('models', {}).get('detector', {})
+    if det_cfg.get('type', 'yolov8') == 'coreml':
+        logger.info("Core ML detector configured but not usable here: using YOLOv8 (PyTorch) instead")
+        config = {**config, 'models': {**config['models'], 'detector': {**det_cfg, 'type': 'yolov8'}}}
     return ObjectDetector(config, system_info)

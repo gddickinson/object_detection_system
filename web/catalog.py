@@ -16,16 +16,20 @@ PACKAGES = [("main.py", "Entry point"), ("models", "Models"), ("postprocess", "P
 DETECTORS = [
     {"id": "yolov8", "name": "YOLOv8 (PyTorch)", "cls": "ObjectDetector", "source": "models/detector.py",
      "library": "ultralytics", "weights": "data/models/yolov8n.pt",
+     "obtain": "Not in the repository: ultralytics downloads it on first use. Ultralytics weights are AGPL-3.0.",
      "how": "ultralytics YOLO(model).predict with conf = the confidence threshold; boxes as xyxy pixels, class "
             "names from the model. Runs on CUDA, MPS or CPU (BaseModel picks the device from the system info).",
      "chosen": "create_detector's default, and its fallback when Core ML is unavailable."},
     {"id": "coreml", "name": "YOLOv8 (Core ML)", "cls": "CoreMLDetector", "source": "models/detector.py",
      "library": "coremltools", "weights": "data/models/yolov8n.mlpackage",
+     "obtain": "Not in the repository: export it with `yolo export model=yolov8n.pt format=coreml nms=True` "
+               "(AGPL-3.0, as the weights); without it create_detector uses the PyTorch model.",
      "how": "Image resized to 640 x 640; the exported model's NMS outputs (per-class scores, normalised centre "
             "boxes) are parsed by postprocess/coreml_output.py and scaled back to the image.",
      "chosen": "create_detector on macOS / Apple Silicon when coremltools is installed (config.yaml default)."},
     {"id": "tensorflow", "name": "TensorFlow SavedModel", "cls": "TensorFlowDetector", "source": "models/detector.py",
      "library": "tensorflow + object_detection", "weights": "data/models/tf_model",
+     "obtain": "Not in the repository: supply your own SavedModel.",
      "how": "detection_boxes / scores / classes of a TF Object Detection API SavedModel, filtered by the threshold; "
             "names from label_map.pbtxt.",
      "chosen": "Not chosen by create_detector; must be constructed directly."},
@@ -33,6 +37,7 @@ DETECTORS = [
 SEGMENTORS = [
     {"id": "sam", "name": "Segment Anything (SAM)", "cls": "ObjectSegmentor", "source": "models/segmentor.py",
      "library": "segment_anything", "weights_key": "checkpoint",
+     "obtain": "Not in the repository: download the checkpoint (README). SAM is Apache-2.0.",
      "how": "SamPredictor with each detection box as the prompt (single mask); the largest external contour of the "
             "mask is kept as the outline."},
     {"id": "opencv", "name": "OpenCV fallback", "cls": "ObjectSegmentor._basic_segment", "source": "models/segmentor.py",
@@ -85,25 +90,15 @@ def labels():
     return out
 
 
-def _size(rel):
-    p = ROOT / rel
-    if p.is_file():
-        return p.stat().st_size
-    if p.is_dir():
-        return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
-    return None
-
-
 def models():
     cfg = load_config().get("models", {})
     seg_ckpt = (cfg.get("segmentor") or {}).get("checkpoint", "")
-    dets = [{**d, "weights_bytes": _size(d["weights"])} for d in DETECTORS]
+    dets = [dict(d) for d in DETECTORS]
     segs = []
     for s in SEGMENTORS:
         s = dict(s)
         if s.pop("weights_key", None):
             s["weights"] = seg_ckpt
-            s["weights_bytes"] = _size(seg_ckpt) if seg_ckpt else None
         segs.append(s)
     return {"detectors": dets, "segmentors": segs, "trackers": TRACKERS, "llms": LLMS, "config": cfg}
 
@@ -133,7 +128,6 @@ def modules():
 
 def summary():
     m = models()
-    present = [d for d in m["detectors"] if d["weights_bytes"]]
     mods = modules()
     return {
         "n_classes": len(labels()),
@@ -142,6 +136,7 @@ def summary():
         "n_trackers": len(m["trackers"]),
         "n_modules": sum(len(g["modules"]) for g in mods),
         "n_lines": sum(x["lines"] for g in mods for x in g["modules"]),
-        "weights_in_repo": [{"file": d["weights"], "bytes": d["weights_bytes"]} for d in present],
+        "weights": [{"file": x["weights"], "obtain": x["obtain"]} for x in m["detectors"] + m["segmentors"]
+                    if x.get("weights")],
         "config": public_config(),
     }

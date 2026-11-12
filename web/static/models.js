@@ -1,10 +1,9 @@
 // Models: back ends as implemented in models/, config.yaml settings, the class list with its box colours.
 import { api, app, esc, route } from './core.js';
 
-const size = b => b == null ? '<span class="badge no">not in repo</span>' : `<span class="badge ok">${(b / 1e6).toFixed(1)} MB in repo</span>`;
 const card = x => `<div class="card"><b>${esc(x.name)}</b><small>${esc(x.cls || '')} · ${esc(x.source)}${x.library ? ' · ' + esc(x.library) : ''}</small>
   <span>${esc(x.how || '')}</span>${x.chosen ? `<small>${esc(x.chosen)}</small>` : ''}
-  ${x.weights ? `<small>${esc(x.weights)} ${size(x.weights_bytes)}</small>` : ''}</div>`;
+  ${x.weights ? `<small><code>${esc(x.weights)}</code>: ${esc(x.obtain || '')}</small>` : ''}</div>`;
 
 function kv(obj, prefix = '') {
   return Object.entries(obj || {}).map(([k, v]) => v && typeof v === 'object' && !Array.isArray(v)
@@ -17,8 +16,8 @@ route('models', async () => {
   <h1>Models</h1>
   <p class="lead">Every model sits behind an abstract base class in models/base.py (<code>BaseDetector.detect</code>,
     <code>BaseSegmentor.segment</code>, <code>BaseTracker.update</code>), so the GUI does not depend on the back end.
-    The models, weights and libraries are third-party and have their own licences; model weights are not part of this web
-    site.</p>
+    The models, weights and libraries are third-party and have their own licences (THIRD_PARTY.md); no model weights are
+    in the repository or on this site.</p>
   <h2>Detectors</h2><div class="grid wide">${m.detectors.map(card).join('')}</div>
   <h2>Segmentors</h2><div class="grid wide">${m.segmentors.map(card).join('')}</div>
   <h2>Trackers</h2><div class="grid wide">${m.trackers.map(card).join('')}</div>

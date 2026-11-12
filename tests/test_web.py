@@ -153,3 +153,16 @@ def test_detect_with_stub_models(monkeypatch):
     j = r.json()
     assert (j["width"], j["height"]) == (40, 30) and j["detections"][0]["class_name"] == "cat"
     assert j["contours"] == [[[1, 2], [11, 2], [11, 22]]] and j["segmentor"] == "OpenCV fallback"
+
+
+def test_no_model_weights_shipped(tmp_path):
+    """Model weights are third-party (YOLOv8: AGPL-3.0): not tracked by git, not in the static site."""
+    info = client.get("/api/info").json()
+    assert any("AGPL-3.0" in w["obtain"] for w in info["weights"])
+    if shutil.which("git") and (ROOT / ".git").exists():
+        tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.split()
+        assert not [f for f in tracked if f.endswith((".pt", ".pth", ".mlmodel", "weight.bin"))]
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_static
+    build_static.build(tmp_path / "site")
+    assert not [p for p in (tmp_path / "site").rglob("*") if p.suffix in (".pt", ".pth", ".mlpackage", ".bin")]

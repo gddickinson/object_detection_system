@@ -2,3 +2,8 @@
 .DS_Store
 __pycache__/
 site/
+
+# Model weights: third-party licences (see THIRD_PARTY.md); ultralytics downloads YOLOv8 weights on first use
+*.pt
+*.mlpackage/
+data/models/tf_model/

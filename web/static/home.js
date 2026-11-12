@@ -1,8 +1,6 @@
 // Home: hero, real counts from the repo (labels.txt, models/, config.yaml), cards to the pages.
 import { api, app, esc, isStatic, route } from './core.js';
 
-const mb = b => (b / 1e6).toFixed(1) + ' MB';
-
 route('home', async () => {
   const info = await api('/info');
   const t = info.config.models.tracker || {}, d = info.config.models.detector || {};
@@ -35,7 +33,7 @@ route('home', async () => {
     <a class="card" href="#/models"><b>Models</b><span>Detector, segmentor, tracker and LLM back ends, the config.yaml settings and the ${info.n_classes} classes.</span></a>
     <a class="card" href="#/about"><b>About</b><span>Running the desktop app and the web app, credits and notes.</span></a>
   </div>
-  <h2>Model files in the repository</h2>
-  <p>${info.weights_in_repo.map(w => `<span class="badge">${esc(w.file)} · ${mb(w.bytes)}</span>`).join(' ')}
-    <span class="badge">SAM checkpoint: downloaded separately (README)</span></p>`;
+  <h2>Model files</h2>
+  <p class="mute">No weights are committed (their licences differ from this project's MIT licence; see THIRD_PARTY.md).</p>
+  <div class="grid wide">${info.weights.map(w => `<div class="card"><b><code>${esc(w.file)}</code></b><span>${esc(w.obtain)}</span></div>`).join('')}</div>`;
 });

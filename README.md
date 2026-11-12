@@ -37,20 +37,19 @@ A comprehensive computer vision application for detecting, segmenting, and track
    pip install -r requirements.txt
    ```
 
-3. Download models:
-   
-   For YOLOv8:
-   ```bash
-   mkdir -p data/models
-   # Download YOLOv8n (small)
-   wget -O data/models/yolov8n.pt https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt
-   ```
-   
-   For SAM (Segment Anything Model):
-   ```bash
-   # Download SAM ViT-B
-   wget -O data/models/sam_vit_b_01ec64.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
-   ```
+3. Models (not included in this repository; see [THIRD_PARTY.md](THIRD_PARTY.md) for their licences):
+
+   - **YOLOv8**: nothing to do. On first use ultralytics downloads `yolov8n.pt` into `data/models/`. The Ultralytics
+     YOLOv8 weights are licensed under **AGPL-3.0**, not this project's MIT licence.
+   - **Core ML (optional, Apple Silicon)**: export the weights once (writes `data/models/yolov8n.mlpackage`):
+     ```bash
+     yolo export model=data/models/yolov8n.pt format=coreml nms=True
+     ```
+     Without it, `create_detector` uses the PyTorch model.
+   - **SAM (optional)**: download the ViT-B checkpoint; without it the OpenCV fallback segments.
+     ```bash
+     wget -O data/models/sam_vit_b_01ec64.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+     ```
 
 ## Usage
 
@@ -218,7 +217,8 @@ class MyPlugin(BasePlugin):
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details. Model weights and third-party
+libraries keep their own licences (YOLOv8 weights: AGPL-3.0); see [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ## Acknowledgements
 

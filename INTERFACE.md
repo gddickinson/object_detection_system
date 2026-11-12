@@ -15,7 +15,7 @@
 | `web/`, `run_web.py` | Web interface (FastAPI, port 8171) and static-site data; see "Web interface" below |
 | `scripts/` | Static build, screenshots, fixture/demo generators |
 | `tests/` | pytest: post-processing, bug regressions, web API (`tests/fixtures/` JS-vs-Python cases) |
-| `data/` | Model weights, labels, example images, user data |
+| `data/` | Labels, example image, user data; model weights are downloaded or exported locally (git-ignored, THIRD_PARTY.md) |
 | `test_object_detection.py` | Test suite for models, auth, utils, config |
 
 ## Key Classes and Functions

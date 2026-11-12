@@ -41,6 +41,8 @@ route('detect', async () => {
       <fieldset><legend>Display</legend><div class="toggles">
         <label><input type="checkbox" id="lb" checked> labels</label><label><input type="checkbox" id="ce" checked> centres</label></div></fieldset>
       <fieldset><legend>This computer</legend><p>${pk}</p><p>${fl}</p>
+        <p class="hint">A missing data/models/yolov8n.pt is downloaded by ultralytics on the first run (AGPL-3.0 weights);
+          the Core ML model must be exported (see README).</p>
         ${status.ready ? '' : '<p class="err">Inference needs torch, ultralytics and opencv-python (pip install -r requirements.txt).</p>'}</fieldset>
     </div>
   </div>`;

@@ -13,8 +13,8 @@ route('about', () => {
 python main.py                 # login (default admin / admin)
 python main.py --skip-login    # development
 python main.py --input image.jpg</pre>
-      <p class="mute">YOLOv8n weights ship in data/models/. For SAM, download sam_vit_b_01ec64.pth into data/models/
-        (see the README); without it the OpenCV fallback segments.</p></div>
+      <p class="mute">YOLOv8n weights are downloaded by ultralytics on first use (AGPL-3.0; see THIRD_PARTY.md). For SAM,
+        download sam_vit_b_01ec64.pth into data/models/ (see the README); without it the OpenCV fallback segments.</p></div>
     <div class="panel"><h3>Web app (local)</h3>
 <pre>pip install -r requirements.txt -r requirements-web.txt
 python run_web.py              # http://127.0.0.1:8171</pre>

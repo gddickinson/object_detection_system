@@ -67,7 +67,9 @@ def _models(backend):
     finally:
         os.chdir(cwd)
     if getattr(det, "model", None) is None:
-        raise InferenceError(f"The {backend} detector could not load its model (see the server log).")
+        hint = (" Export the Core ML model with: yolo export model=yolov8n.pt format=coreml nms=True"
+                if backend == "coreml" else "")
+        raise InferenceError(f"The {backend} detector could not load its model (see the server log).{hint}")
     _CACHE[backend] = (det, seg)
     return _CACHE[backend]
 
